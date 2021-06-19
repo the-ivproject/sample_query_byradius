@@ -141,11 +141,21 @@ let a = $.ajax({
                             </li>`
                 return data
             })
+
             let newEl = document.createElement('ul')
             newEl.id = 'newData'
+            let temptArray = null
+            // function delete_row(e) {
+            //     e.parentElement.remove();
+            // }
+            function delete_row(e) {
+                e.parentElement.remove();
+            }
 
             if(result._data.features.length !== 0){
+              
                 document.getElementById('default').style.display = "none"
+                
                 newEl.innerHTML = newList.join(",").replaceAll(",","")
                 list.appendChild(newEl)
                 document.getElementById('count').innerText = `Total: ${result._data.features.length}`
@@ -154,6 +164,14 @@ let a = $.ajax({
                 document.getElementById('default').style.display = "block"
                 document.getElementById('count').innerText = 'Total: 0'
             }
+            let o = document.getElementById('colorlib-main-menu')
+            let y = o.querySelectorAll('ul')
+      
+            if(y.length > 2) {
+                y[1].remove()
+               
+            }
+            
         });
 
         let UseBbox = (geo, pad) => {
