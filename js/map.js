@@ -8,7 +8,7 @@ mapboxgl.accessToken = mapbox_token
 
 var map = new mapboxgl.Map({
     container: 'map', // container id
-    style: 'mapbox://styles/mapbox/streets-v11', // YOUR TURN: choose a style: https://docs.mapbox.com/api/maps/#styles
+    style: 'mapbox://styles/mapbox/dark-v10', // YOUR TURN: choose a style: https://docs.mapbox.com/api/maps/#styles
     center: [31.237400233484536, 88.7984904553465], // starting position [lng, lat]
 });
 
@@ -50,7 +50,7 @@ let a = $.ajax({
                         [3, '#d00000'],
                     ]
                 },
-                'circle-radius': 4,
+                'circle-radius': 3,
                 'circle-stroke-width': 1,
                 'circle-stroke-color': 'white',
                 'circle-stroke-opacity': 1
@@ -130,48 +130,72 @@ let a = $.ajax({
             let result = map.getSource('query-results')
             result.setData(turf.featureCollection(featuresInBuffer));
 
-            let list = document.getElementById('colorlib-main-menu')
-            
+            let list = document.getElementById('query-total')
+
             let newList = result._data.features.map(a => {
-                let data = `<li style='font-weight: bold;border-bottom: 0.5px solid #bfbfbf;'>${a.properties.acq_date}<br>
-                                <a>Fire Radiative Power<br>
-                                    <span style='font-weight: bold;font-size: 20px; color:#d62828;'> ${a.properties.frp}mw
-                                    </span>
+                let coor = a.geometry.coordinates.map(c => {
+                    return c.toFixed(3)
+                })
+
+                let data = `
+                            <li class="sidebar-dropdown">
+                                <a>
+                                    <i class="fa fa-map-marker"></i>
+                                    <p class="query-res"><span class="small-date">${a.properties.acq_date}</span>
+                                    <br>
+                                    <span =id"latlng">Lat ${coor[0]} - Long ${coor[1]}</span>
+                                    <input type="hidden" value=${coor[0]}>
+                                    <input type="hidden" value=${coor[1]}>
+                                    <br>
+                                    <span class="detail-res"> Fire Radiative Power <span class="big-num">${a.properties.frp}Mw</span></p>
                                 </a>
-                            </li>`
+                            </li>
+                            `
+
                 return data
             })
 
             let newEl = document.createElement('ul')
             newEl.id = 'newData'
             let temptArray = null
-            // function delete_row(e) {
-            //     e.parentElement.remove();
-            // }
+
             function delete_row(e) {
                 e.parentElement.remove();
             }
 
-            if(result._data.features.length !== 0){
-              
+            if (result._data.features.length !== 0) {
                 document.getElementById('default').style.display = "none"
-                
-                newEl.innerHTML = newList.join(",").replaceAll(",","")
+                newEl.innerHTML = newList.join(",").replaceAll(",", "")
                 list.appendChild(newEl)
-                document.getElementById('count').innerText = `Total: ${result._data.features.length}`
+                document.getElementById('query-count').innerText = `${result._data.features.length}`
             } else {
                 document.getElementById('newData').style.display = "none"
                 document.getElementById('default').style.display = "block"
-                document.getElementById('count').innerText = 'Total: 0'
+                document.getElementById('query-count').innerText = '0'
             }
-            let o = document.getElementById('colorlib-main-menu')
-            let y = o.querySelectorAll('ul')
-      
-            if(y.length > 2) {
-                y[1].remove()
-               
+
+            let removeList = list.querySelectorAll('ul')
+
+            if (removeList.length > 3) {
+                removeList[2].remove()
             }
-            
+            let u = list.querySelectorAll('li')
+            let p = new mapboxgl.Popup()
+            for (let i in u) {
+                if (i > 1) {
+                    let l = u[i]
+                    l.addEventListener("mouseover", function (event) {
+                        let c = event.target.querySelectorAll("input")
+                        let lat = c[0].value
+                        let long = c[1].value
+
+                        let popup = p
+                            .setLngLat([lat, long])
+                            .setHTML(`<p>This is firespot</p>`)
+                            .addTo(map);
+                    })
+                }
+            }
         });
 
         let UseBbox = (geo, pad) => {
